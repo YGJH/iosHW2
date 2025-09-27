@@ -214,6 +214,10 @@ struct serverInfo: View {
     private var BackgroundColor: Color {
         colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255, opacity: 1): Color.secondary.opacity(0.1)
     }
+    private var borderColor: Color {
+        colorScheme == .dark ? Color.white.opacity(0.4):
+        Color(red: 0, green: 0, blue: 0, opacity: 0.3)
+    }
     
     
     @State private var searchText: String = ""
@@ -225,7 +229,7 @@ struct serverInfo: View {
                 bottomTrailingRadius: 0,
                 topTrailingRadius: 0
             )
-            .strokeBorder(Color.gray.opacity(0.3))
+            .strokeBorder(borderColor)
             .fill(BackgroundColor)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 //            .strokeBorder(Color.gray, width: 1)
@@ -627,7 +631,7 @@ struct UserBadge: View {
         .padding(.bottom, 10)
         .frame(maxWidth: .infinity, maxHeight: 70)
         .background(BadgeColor.opacity(0.3))
-        .border(Color.gray.opacity(0.3), width: 1)
+        .border(Color.gray.opacity(0.2), width: 1)
     }
 }
 
