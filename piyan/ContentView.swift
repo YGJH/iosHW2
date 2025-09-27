@@ -26,22 +26,26 @@ struct serverList: View {
     private var ChatBubbleColor: Color {
         colorScheme == .dark ? Color(red: 10, green: 10, blue: 10, opacity: 0.01) : Color(red: 0, green: 0, blue: 0, opacity: 0.1)
     }
+    private var CircleBorderColor: Color {
+        colorScheme == .dark ? Color.black: Color.white
+    }
+
 
     var body: some View {
         ScrollView{
             VStack {
-                // 將 message.fill 放在一個圓形外框中
                 Image(systemName: "message.fill")
                     .font(.system(size: 27, weight: .semibold))
                     .foregroundStyle(.gray)
-                    .frame(width: 34, height: 34)    // 圖示實際尺寸
-                    .padding(12)                      // 內距讓外圈成為直徑約 48 的圓
+                    .frame(width: 34, height: 34)
+                    .padding(12)
                     .background(
-                        Circle().fill(ChatBubbleColor)
+                        Circle().fill(ChatBubbleColor).border(CircleBorderColor)
                     )
                     .overlay(
-                        Circle().stroke(Color.secondary.opacity(0.25), lineWidth: 1)
+                        Circle().stroke(CircleBorderColor, lineWidth: 1)
                     )
+                    
                 
                 Divider()
                     .frame(width: 50)
@@ -64,11 +68,8 @@ struct ButtonView: View {
         colorScheme == .dark ? Color(red: 10, green: 10 , blue: 10 , opacity: 0.01): Color(red: 0, green: 0, blue: 0, opacity: 0.1)
     }
 
-
-
     var body: some View {
         Button {
-            // 按鈕動作：新增群組/邀請等
         } label: {
             image
                 .font(.system(size: 16, weight: .semibold))
@@ -80,14 +81,12 @@ struct ButtonView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Add members")
-        
     }
-//    Image(systemName: "arrowshape.forward.fill")
 }
-
 
 struct ServerChannelListView: View {
     let name: String
+    var onSelect: () -> Void = {}
     
     @State private var isExpanded: Bool = false
     @Environment(\.colorScheme) private var colorScheme
@@ -102,42 +101,41 @@ struct ServerChannelListView: View {
                 isExpanded.toggle()
             } label: {
                 HStack(spacing: 8) {
-                    // 固定箭頭容器寬度，避免圖示切換時推擠文字
                     Image(systemName: isExpanded ? "arrowshape.down.fill" : "arrowshape.forward.fill")
                         .font(.system(size: 10))
                         .foregroundStyle(channelTextColor)
-                        .frame(width: 14, alignment: .center) // 固定寬度
+                        .frame(width: 14, alignment: .center)
 
                     Text(name)
                         .font(.system(size: 15, weight: Font.Weight.semibold))
                         .foregroundStyle(channelTextColor)
                 }
                 .padding(.top, 10)
-                .frame(maxWidth: .infinity, alignment: .leading) // 標籤寬度固定且靠左
-                .contentShape(Rectangle()) // 擴大點擊區域，避免因布局變動影響點擊
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             
             if isExpanded {
                 VStack(alignment: .leading, spacing: 0) {
-                    ServerChannelView(name: "Channel 1")
-                    ServerChannelView(name: "Channel 2")
-                    ServerChannelView(name: "Channel 3")
-                    ServerChannelView(name: "Channel 4")
-                    ServerChannelView(name: "Channel 5")
-                    ServerChannelView(name: "Channel 6")
+                    ServerChannelView(name: "Channel 1", onSelect: onSelect)
+                    ServerChannelView(name: "Channel 2", onSelect: onSelect)
+                    ServerChannelView(name: "Channel 3", onSelect: onSelect)
+                    ServerChannelView(name: "Channel 4", onSelect: onSelect)
+                    ServerChannelView(name: "Channel 5", onSelect: onSelect)
+                    ServerChannelView(name: "Channel 6", onSelect: onSelect)
                 }
-                .padding(.leading, 3) // 子項目縮排，不影響上方按鈕
+                .padding(.leading, 3)
             }
         }
         .padding(.leading, 10)
-        .border(Color.red, width: 2)
     }
 }
 
-
 struct ServerChannelView: View {
     let name: String
+    var onSelect: () -> Void = {}
+    
     @Environment(\.colorScheme) private var colorScheme
     
     private var channelTextColor: Color {
@@ -146,7 +144,7 @@ struct ServerChannelView: View {
     
     var body: some View {
         Button {
-            
+            onSelect()
         } label: {
             HStack {
                 Image(systemName: "number")
@@ -160,20 +158,15 @@ struct ServerChannelView: View {
                     .foregroundStyle(channelTextColor)
             }
             .padding(.top, 10)
-            .frame(maxWidth: .infinity, alignment: .leading) // 與群組列同寬且靠左
+            .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .border(Color.red , width: 2)
     }
 }
 
-
-
 struct serverBadge: View {
     @State private var searchText: String = ""
-    
-    
     
     @Environment(\.colorScheme) private var colorScheme
     
@@ -184,8 +177,6 @@ struct serverBadge: View {
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
-                
-                // 使「放大鏡 + TextField」整組置中
                 HStack(spacing: 6) {
                     Spacer(minLength: 0)
                     
@@ -199,7 +190,6 @@ struct serverBadge: View {
                             .textInputAutocapitalization(.never)
                             .multilineTextAlignment(.center)
                             .fixedSize(horizontal: true, vertical: false)
-                        
                     }
                     
                     Spacer(minLength: 0)
@@ -211,17 +201,15 @@ struct serverBadge: View {
                 Capsule().fill(searchColorScheme)
             )
             
-            // 右側圓形按鈕
             ButtonView(image: Image(systemName: "calendar"))
             ButtonView(image: Image(systemName: "person.2.badge.plus.fill"))
-            
-            
         }
-
     }
-
 }
+
 struct serverInfo: View {
+    var onSelectChannel: () -> Void = {}
+    
     @State private var searchText: String = ""
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -234,15 +222,14 @@ struct serverInfo: View {
             Divider()
             
             ScrollView {
-                // 也可包一層 leading 對齊的 VStack，效果等同
                 VStack(alignment: .leading, spacing: 0) {
-                    ServerChannelListView(name: "屁眼")
-                    ServerChannelListView(name: "屁眼")
-                    ServerChannelListView(name: "屁眼")
-                    ServerChannelListView(name: "屁眼")
-                    ServerChannelListView(name: "屁眼")
+                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
 
-                    ServerChannelView(name: "aaaaa")
+                    ServerChannelView(name: "aaaaa", onSelect: onSelectChannel)
                 }
             }
         }
@@ -256,8 +243,6 @@ struct serverInfo: View {
 }
 
 struct MessageView: View {
-    
-    
     let name: String
     let message: String
     
@@ -277,7 +262,6 @@ struct MessageView: View {
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
             
-
             VStack(alignment: .leading) {
                 HStack(alignment: .center) {
                     Text(name)
@@ -285,23 +269,17 @@ struct MessageView: View {
                         .bold()
                         .foregroundStyle(TextColorScheme)
                         .padding(.top, 4)
-//                        .border(Color.yellow, width: 2)
                     Text("凌晨 10:30")
                         .foregroundStyle(TimeColorScheme)
                         .font(.system(size: 14))
                         .padding(.top, 3)
-//                        .border(Color.gray, width: 1)
                 }
 
                 Text(message)
                     .font(.default)
                     .foregroundStyle(TextColorScheme)
                     .padding(.top, -2)
-//                    .border(Color.yellow, width: 2)
-
-                
             }
-
             .padding(.leading, 4)
             Spacer()
         }
@@ -309,14 +287,13 @@ struct MessageView: View {
         .padding(.top, 10)
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
-//        .border(Color.white, width: 2)
-
     }
 }
 
 struct ChatingBadge: View {
-    
     let serverName: String
+    var onBack: () -> Void = {}
+    
     @Environment(\.colorScheme) private var colorScheme
     var BadgeColorScheme: Color {
         colorScheme == .dark ?  Color.white :  Color.black
@@ -325,25 +302,29 @@ struct ChatingBadge: View {
         colorScheme == .dark ? Color.white.opacity(0.3) : Color.black.opacity(0.3)
     }
 
-    var body: some View {
-        HStack (alignment: .center) {
+    private var returnBackButton : some View {
+        Button {
+            onBack()
+        } label: {
             Image(systemName: "arrowshape.backward.fill")
                 .font(.system(size: 20))
                 .foregroundStyle(BadgeColorScheme)
                 .padding(.leading, 20)
-            
+        }
+    }
+    
+    private var topBadge: some View {
+        Button {
+        } label: {
             Image(systemName: "number")
                 .font(.system(size: 24))
                 .padding(.leading, 20)
-//                .border(Color.white, width: 1)
-
+                .foregroundStyle(BadgeColorScheme.opacity(0.5))
             VStack (alignment: .leading) {
-                
                 Text(serverName)
                     .foregroundStyle(BadgeColorScheme)
                     .bold()
                     .font(Font.system(size: 18))
-//                    .border(Color.white, width: 1)
                 HStack {
                     Circle()
                         .foregroundStyle(Color.green)
@@ -353,59 +334,136 @@ struct ChatingBadge: View {
                         .foregroundStyle(UserCountColorScheme)
                         .font(Font.system(size: 10))
                 }.padding(.top, -9)
-                    
-                
             }
-//                .padding(.leading, 20)
+        }
+    }
+    var body: some View {
+        HStack (alignment: .center) {
+            returnBackButton
+            topBadge
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: 30)
-//        .border(Color.white, width: 2)
-
-        
+        .padding(.bottom, 10)
     }
-    
 }
-
-//struct ChatingBox: View{
-////    @Environment(\.colorScheme) private var colorScheme
-//
-//    @Environment(\.colorScheme) private var colorScheme
-//    var ChatBoxColorSheme: Color {
-//        colorScheme == .dark ? Color(red: 0 , green: 0, blue: 0, opacity: 1):
-//        Color(red: 10, green: 10, blue: 10, opacity: 1)
-//    }
-//    
-//    var body: some View {
-//        VStack {
-//            ChatingBadge(serverName: "公開聊天")
-//            Divider()
-//                .background(ChatBoxColorSheme)
-//            
-//            // 內容不足時貼齊底部；內容超過時向上捲動，超出才會被上方標題遮住
-//            ScrollView {
-//                    VStack(alignment: .trailing, spacing: 0) {
-//
-//                        MessageView(name: "Guan" ,message: "aaaaaa")
-//                        MessageView(name: "Guan" ,message: "aaaaaa")
-//                        MessageView(name: "Guan" ,message: "aaaaaa")
-//                        MessageView(name: "Guan" ,message: "aaaaaa")
-//                        MessageView(name: "Guan" ,message: "aaaaaa")
-//                    }
-//                    .frame(maxWidth: .infinity)
-//            }
-//            .frame(maxWidth: .infinity)
-//        }
-//        .background(ChatBoxColorSheme)
-//    }
-//}
 
 struct ChatingInputBox: View {
-   
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var buttonBackgroundColor: Color {
+        colorScheme == .dark ? Color.white : Color.black;
+    }
+    
+    private var plusButton: some View {
+        Button {
+        } label: {
+            Image(systemName: "plus")
+                .resizable()
+                .frame(width: 16, height: 16)
+                .padding(9)
+                .overlay(
+                    Circle()
+                        .foregroundColor(buttonBackgroundColor.opacity(0.1))
+                )
+                .foregroundStyle(buttonBackgroundColor.opacity(1))
+        }
+    }
+    
+    private var gameButton: some View {
+        Button {
+        } label: {
+            Image(systemName: "gamecontroller.fill")
+                .resizable()
+                .frame(width: 18, height: 16)
+                .padding(10)
+                .overlay(
+                    Circle()
+                        .foregroundColor(buttonBackgroundColor.opacity(0.1))
+                )
+                .foregroundStyle(buttonBackgroundColor.opacity(1))
+        }
+    }
+    
+    private var giftButton: some View {
+        Button {
+        } label : {
+            Image(systemName: "gift.fill")
+                .resizable()
+                .frame(width: 16, height: 16)
+                .padding(10)
+                .overlay(
+                    Circle()
+                        .foregroundColor(buttonBackgroundColor.opacity(0.1))
+                )
+                .foregroundStyle(buttonBackgroundColor.opacity(1))
+        }
+    }
+
+    @State var inputMessage: String = ""
+    
+    private var sendButton : some View {
+        Button(action: {
+            inputMessage = ""
+        }) {
+            Image(systemName: "paperplane.fill")
+                .frame(width: 16, height: 16)
+                .foregroundColor(.white)
+                .padding(10)
+                .background(Color.blue)
+                .clipShape(Circle())
+        }
+    }
+    
+    private var micButton: some View {
+        Button {
+        } label: {
+            Image(systemName: "microphone.fill")
+                .resizable()
+                .frame(width: 16, height: 20)
+                .padding(10)
+                .overlay(
+                    Circle()
+                        .foregroundColor(buttonBackgroundColor.opacity(0.1))
+                )
+                .foregroundStyle(buttonBackgroundColor)
+        }
+    }
+    
+    private var inputField : some View {
+        TextField("", text: $inputMessage)
+            .textFieldStyle(.plain)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+            .multilineTextAlignment(.leading)
+            .padding(7)
+            .overlay(
+                HStack{
+                    Text("請輸入要說的話：")
+                        .font(.system(size: 12))
+                        .padding(10)
+                        .foregroundStyle(buttonBackgroundColor.opacity(0.3))
+                    Spacer()
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(buttonBackgroundColor.opacity(0.1))
+            .cornerRadius(10)
+    }
+    
     var body: some View {
-        
+        HStack (alignment:.center){
+            plusButton
+            gameButton
+            giftButton
+            inputField
+            sendButton
+            micButton
+        }
+        .padding(10)
     }
 }
+
 struct Message: Identifiable {
     let id = UUID()
     let name: String
@@ -419,77 +477,84 @@ struct ChatingBox: View {
         colorScheme == .dark ? Color.black : Color(white: 0.95)
     }
 
-    // 範例用資料，實務上你會用你的 messages state / view model
     @State private var messages: [Message] = [
         Message(name: "Guan", text: "第一則"),
         Message(name: "Guan", text: "第二則"),
         Message(name: "Guan", text: "第三則")
     ]
+    
+    var onBack: () -> Void = {}
 
-    var body: some View {
-        VStack(spacing: 0) {
-            ChatingBadge(serverName: "公開聊天")
-            Divider()
-                .background(chatBoxColorScheme)
-
-            // 重要：GeometryReader 只包裹 ScrollView 區域，geo.size.height = 可用內容高度
-            GeometryReader { geo in
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        // LazyVStack 比 VStack 在大量訊息時效能更好
-                        LazyVStack(alignment: .trailing, spacing: 8) {
-                            ForEach(messages) { msg in
-                                MessageView(name: msg.name, message: msg.text)
-                                    .id(msg.id) // 設 id 以便 ScrollViewReader scrollTo()
-                            }
+    private var messageArea: some View {
+        GeometryReader { geo in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .trailing, spacing: 8) {
+                        ForEach(messages) { msg in
+                            MessageView(name: msg.name, message: msg.text)
+                                .id(msg.id)
                         }
-                        // 這一行是關鍵：內容最小高度等於可視高度，並以 bottom 對齊
-                        .frame(minHeight: geo.size.height, alignment: .bottom)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal)
                     }
-                    // 畫面出現時捲到最後一則
-                    .onAppear {
-                        if let lastId = messages.last?.id {
+                    .frame(minHeight: geo.size.height, alignment: .bottom)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal)
+                }
+                .onAppear {
+                    if let lastId = messages.last?.id {
+                        proxy.scrollTo(lastId, anchor: .bottom)
+                    }
+                }
+                .onChange(of: messages.count) { oldValue, newValue in
+                    if oldValue != newValue, let lastId = messages.last?.id {
+                        withAnimation(.easeOut) {
                             proxy.scrollTo(lastId, anchor: .bottom)
                         }
                     }
-                    // 當 messages 改變（例如新訊息加入）時，自動捲到底
-                    .onChange(of: messages.count) { oldValue, newValue in
-                        if oldValue != newValue, let lastId = messages.last?.id {
-                            withAnimation(.easeOut) {
-                                proxy.scrollTo(lastId, anchor: .bottom)
-                            }
-                        }
-                    }
                 }
-            } // GeometryReader
-            .frame(maxWidth: .infinity)
-            
-            
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 700, maxHeight: .infinity)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ChatingBadge(serverName: "公開聊天", onBack: onBack)
+            Divider()
+            messageArea
+            Divider()
             ChatingInputBox()
-            
         }
         .background(chatBoxColorScheme)
     }
 }
 
 struct ContentView: View {
+    @State private var isChatHidden: Bool = true
+
     var body: some View {
         ZStack {
             HStack {
                 serverList()
-                    .border(Color.blue, width: 2)
-                serverInfo()
-                    .border(Color.green, width: 2)
-                //                .frame(maxWidth: 0)
-                    .frame(maxWidth: 500)
-            
+                serverInfo {
+                    // 選到任何頻道時，讓聊天視圖由右向左滑入
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                        isChatHidden = false
+                    }
+                }
+                .frame(maxWidth: 500)
             }
-            ChatingBox()
-
+            
+            // 整個聊天盒滑出/滑入
+            ChatingBox {
+                // 上方返回按鈕：切換顯示/隱藏
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                    isChatHidden.toggle()
+                }
+            }
+            .offset(x: isChatHidden ? UIScreen.main.bounds.width : 0)
+            .opacity(isChatHidden ? 0 : 1)
+            .animation(.spring(response: 0.35, dampingFraction: 0.9), value: isChatHidden)
         }
-//        .border(Color.red)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
