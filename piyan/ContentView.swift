@@ -210,35 +210,64 @@ struct serverBadge: View {
 struct serverInfo: View {
     var onSelectChannel: () -> Void = {}
     
+    @Environment(\.colorScheme) private var colorScheme
+    private var BackgroundColor: Color {
+        colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255, opacity: 1): Color.secondary.opacity(0.1)
+    }
+    
+    
     @State private var searchText: String = ""
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Server Name")
-                .font(.title)
-                .frame(alignment: .topLeading)
-                .padding(.top, 10)
-
-            serverBadge()
-            Divider()
+        ZStack {
+            UnevenRoundedRectangle(
+                topLeadingRadius: 20,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 0
+            )
+            .strokeBorder(Color.gray.opacity(0.3))
+            .fill(BackgroundColor)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+//            .strokeBorder(Color.gray, width: 1)
             
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
-                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
-                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
-                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
-                    ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
-
-                    ServerChannelView(name: "aaaaa", onSelect: onSelectChannel)
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Server Name")
+                    .font(.title)
+                    .frame(alignment: .topLeading)
+                    .padding(.top, 10)
+                
+                
+                serverBadge()
+                //            Divider()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                        ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                        ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                        ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                        ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
+                        
+                        ServerChannelView(name: "aaaaa", onSelect: onSelectChannel)
+                    }
                 }
             }
+            .padding(10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 20,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 0
+                )
+                .fill(BackgroundColor)
+            )
+            
+            
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(
-            Rectangle().fill(Color(.tertiarySystemBackground))
-                .cornerRadius(20)
-        )
+
+
     }
 }
 
@@ -528,34 +557,124 @@ struct ChatingBox: View {
     }
 }
 
+struct UserBadge: View {
+    
+    @Environment(\.colorScheme) private var colorScheme;
+    
+    private var BadgeColor : Color {
+        colorScheme == .dark ? Color(red:10, green: 10 , blue: 10, opacity: 0.03) : Color.white
+    }
+    
+    private var HomeButton: some View {
+        Button {
+            
+        } label: {
+            Image(systemName: "house.fill")
+                .foregroundStyle(Color.gray)
+                .frame(width: 20, height: 20)
+                .padding(.leading, 40)
+
+        }
+
+    }
+    
+    private var BellButton: some View {
+        Button {
+            
+        } label: {
+            Image(systemName: "bell.fill")
+                .foregroundStyle(Color.gray)
+                .frame(width: 20 ,height: 20)
+                .padding()
+        }
+
+    }
+    
+    private var UserButton: some View {
+        Button {
+            
+        } label: {
+            Image(.userIcon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 40 ,height: 40)
+                .clipShape(Circle())
+                .padding(.trailing, 30)
+                .overlay(
+                    Circle()
+                        .fill(Color.black)
+                        .frame(width: 20, height: 20)
+                        .padding(.top, 24)
+                        .overlay(
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 10 , height: 10)
+                                .padding(.top, 24)
+                        )
+                )
+
+        }
+    }
+    
+    var body : some View {
+        HStack {
+            HomeButton
+            Spacer()
+            BellButton
+            Spacer()
+            UserButton
+        }
+        .padding(.bottom, 10)
+        .frame(maxWidth: .infinity, maxHeight: 70)
+        .background(BadgeColor.opacity(0.3))
+        .border(Color.gray.opacity(0.3), width: 1)
+    }
+}
+
+
 struct ContentView: View {
     @State private var isChatHidden: Bool = true
 
     var body: some View {
-        ZStack {
-            HStack {
-                serverList()
-                serverInfo {
-                    // 選到任何頻道時，讓聊天視圖由右向左滑入
+        GeometryReader { geo in
+        
+            ZStack {
+                VStack {
+                    Rectangle()
+                        .fill(Color(.systemBackground))
+                        .frame(maxWidth: .infinity,
+                               maxHeight: 50)
+                    HStack {
+                        serverList()
+                            
+                        serverInfo {
+                            // 選到任何頻道時，讓聊天視圖由右向左滑入
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                                isChatHidden = false
+                            }
+                        }
+                        .frame(maxWidth: 500)
+                    }
+//                    Spacer()
+                    UserBadge()
+                        .padding(.top, -8)
+
+                }
+                .ignoresSafeArea()
+
+                // 整個聊天盒滑出/滑入
+                ChatingBox {
+                    // 上方返回按鈕：切換顯示/隱藏
                     withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                        isChatHidden = false
+                        isChatHidden.toggle()
                     }
                 }
-                .frame(maxWidth: 500)
+                .offset(x: isChatHidden ? geo.size.width : 0)
+                .opacity(isChatHidden ? 0 : 1)
+                .animation(.spring(response: 0.35, dampingFraction: 0.9), value: isChatHidden)
             }
-            
-            // 整個聊天盒滑出/滑入
-            ChatingBox {
-                // 上方返回按鈕：切換顯示/隱藏
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                    isChatHidden.toggle()
-                }
-            }
-            .offset(x: isChatHidden ? UIScreen.main.bounds.width : 0)
-            .opacity(isChatHidden ? 0 : 1)
-            .animation(.spring(response: 0.35, dampingFraction: 0.9), value: isChatHidden)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 }
 
