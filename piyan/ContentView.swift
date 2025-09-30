@@ -215,7 +215,7 @@ struct serverInfo: View {
         colorScheme == .dark ? Color(red: 28/255, green: 28/255, blue: 30/255, opacity: 1): Color.secondary.opacity(0.1)
     }
     private var borderColor: Color {
-        colorScheme == .dark ? Color.white.opacity(0.4):
+        colorScheme == .dark ? Color.white.opacity(0.3)   :
         Color(red: 0, green: 0, blue: 0, opacity: 0.3)
     }
     
@@ -229,10 +229,10 @@ struct serverInfo: View {
                 bottomTrailingRadius: 0,
                 topTrailingRadius: 0
             )
-            .strokeBorder(borderColor)
-            .fill(BackgroundColor)
+            .stroke(borderColor, lineWidth: 2)
+//            .strokeBorder(borderColor)
+//            .fill(borderColor)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-//            .strokeBorder(Color.gray, width: 1)
             
             VStack(alignment: .leading, spacing: 12) {
                 Text("Server Name")
