@@ -56,6 +56,7 @@ struct serverList: View {
         }
         .padding(.top, 10)
         .padding(.leading, 6)
+        Spacer()
     }
 }
 
@@ -229,20 +230,17 @@ struct serverInfo: View {
                 bottomTrailingRadius: 0,
                 topTrailingRadius: 0
             )
-            .stroke(borderColor, lineWidth: 2)
-//            .strokeBorder(borderColor)
-//            .fill(borderColor)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .stroke(borderColor, lineWidth: 1)
             
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading) {
                 Text("Server Name")
                     .font(.title)
                     .frame(alignment: .topLeading)
-                    .padding(.top, 10)
+                    .padding(10)
                 
                 
                 serverBadge()
-                //            Divider()
+                    .padding(10)
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
@@ -253,11 +251,15 @@ struct serverInfo: View {
                         ServerChannelListView(name: "屁眼", onSelect: onSelectChannel)
                         
                         ServerChannelView(name: "aaaaa", onSelect: onSelectChannel)
+
                     }
                 }
+//                .border(Color.red)
+//                Spacer()
+//                    .frame(width: .infinity, height: .infinity)
+//                    .border(Color.blue)
             }
-            .padding(10)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxHeight: .infinity , alignment: .top)
             .background(
                 UnevenRoundedRectangle(
                     topLeadingRadius: 20,
@@ -267,8 +269,8 @@ struct serverInfo: View {
                 )
                 .fill(BackgroundColor)
             )
-            
-            
+            Spacer().frame(maxHeight: .infinity)
+
         }
 
 
@@ -474,12 +476,12 @@ struct ChatingInputBox: View {
                 HStack{
                     Text("請輸入要說的話：")
                         .font(.system(size: 12))
-                        .padding(10)
+                        .padding(3)
                         .foregroundStyle(buttonBackgroundColor.opacity(0.3))
                     Spacer()
                 }
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: 40)
             .background(buttonBackgroundColor.opacity(0.1))
             .cornerRadius(10)
     }
@@ -487,11 +489,21 @@ struct ChatingInputBox: View {
     var body: some View {
         HStack (alignment:.center){
             plusButton
+//                .border(Color.red)
             gameButton
+//                .border(Color.red)
+
             giftButton
+//                .border(Color.red)
+
             inputField
+//                .border(Color.red)
             sendButton
+//                .border(Color.red)
+
             micButton
+//                .border(Color.red)
+
         }
         .padding(10)
     }
@@ -628,56 +640,69 @@ struct UserBadge: View {
             Spacer()
             UserButton
         }
-        .padding(.bottom, 10)
-        .frame(maxWidth: .infinity, maxHeight: 70)
+        .frame(maxWidth: .infinity, maxHeight: 50)
         .background(BadgeColor.opacity(0.3))
-        .border(Color.gray.opacity(0.2), width: 1)
     }
 }
-
 
 struct ContentView: View {
     @State private var isChatHidden: Bool = true
 
     var body: some View {
         GeometryReader { geo in
-        
-            ZStack {
-                VStack {
-                    Rectangle()
-                        .fill(Color(.systemBackground))
-                        .frame(maxWidth: .infinity,
-                               maxHeight: 50)
-                    HStack {
-                        serverList()
-                            
-                        serverInfo {
-                            // 選到任何頻道時，讓聊天視圖由右向左滑入
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                                isChatHidden = false
+            let isPad = geo.size.width > 700
+            
+            ZStack(alignment: .topLeading) {
+                // 主視圖（server + info + user）
+                HStack(spacing: 0) {
+                    VStack(alignment: .leading) {
+                        HStack(spacing: 0) {
+                            serverList()
+//                                .border(Color.red)
+                            serverInfo {
+                                // 只有在 iPhone 才觸發聊天滑入
+                                if !isPad {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                                        isChatHidden = false
+                                    }
+                                }
                             }
                         }
-                        .frame(maxWidth: 500)
+                        
+                        UserBadge()
+//                            .frame()
+//                            .border(Color.blue)
                     }
-//                    Spacer()
-                    UserBadge()
-                        .padding(.top, -8)
-
-                }
-                .ignoresSafeArea()
-
-                // 整個聊天盒滑出/滑入
-                ChatingBox {
-                    // 上方返回按鈕：切換顯示/隱藏
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-                        isChatHidden.toggle()
+//                    .ignoresSafeArea()
+                    
+                    // iPad（大螢幕）直接顯示聊天盒在右邊
+                    if isPad {
+                        ChatingBox {
+                            // iPad 可以不用回收聊天盒，或自訂返回行為
+                        }
+                        .frame(width: max(geo.size.width * 0.4, 700)) // 自行調整比例
+                        .transition(.move(edge: .trailing))
                     }
                 }
-                .offset(x: isChatHidden ? geo.size.width : 0)
-                .opacity(isChatHidden ? 0 : 1)
-                .animation(.spring(response: 0.35, dampingFraction: 0.9), value: isChatHidden)
+                
+                // iPhone（小螢幕）時，聊天盒用 ZStack 疊上來
+                if !isPad {
+                    ChatingBox {
+                        // 點返回，收回聊天盒
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
+                            isChatHidden = true
+                        }
+                    }
+                    .frame(width: geo.size.width)
+                    .offset(x: isChatHidden ? geo.size.width : 0)
+                    .opacity(isChatHidden ? 0 : 1)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.9), value: isChatHidden)
+//                    .ignoresSafeArea()
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+//            .border(Color.red)
+
         }
     }
 }
